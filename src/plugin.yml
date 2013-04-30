@@ -1,0 +1,39 @@
+name: SimpleNews
+main: com.teamglokk.simplenews.SimpleNews
+version: Alpha 0.01
+authors: [BobbShields]
+commands:
+    news:
+        description: Reads the news in pages
+        aliases: []
+        usage: /news [page#]
+    addnews:
+        description: Adds a news item to the config file
+        aliases: []
+        usage: /addnews This is an example news story.
+permissions:
+    simplenews.*:
+        description: Gives access to all SimpleNews permissions
+        default: false
+        children:
+            simplenews.admin: true
+            simplenews.reporter: true
+            simplenews.reader: true
+    simplenews.admin:
+        description: Gives access to all SimpleNews permissions
+        default: false
+        children:
+            simplenews.admin: true
+            simplenews.reporter: true
+            simplenews.reader: true
+    simplenews.reporter:
+        description: Allows the player to report the news
+        default: false
+        children:
+            simplenews.reporter: true
+            simplenews.reader: true
+    simplenews.reader:
+        description: Allows the player to read the news
+        default: true
+        children: []
+    

@@ -1,0 +1,19 @@
+# Muni configuration file
+# Authored by bobbshields
+#
+# Note: If something is commented out (#), it is done on purpose by the dev
+#        It is likely that the functionality is not yet added to Muni
+#
+#################################################################
+# Descriptions of certain nodes
+#####
+# 
+#################################################################
+
+config_version: .01
+use_metrics: true
+total_stories: 1
+stories:
+    1: 
+         headline: Test Headline 
+         story: Test Story, 1 2 3.  This is a test of Simple News!  Testing Testing
