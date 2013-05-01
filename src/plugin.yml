@@ -4,13 +4,17 @@ version: Alpha 0.01
 authors: [BobbShields]
 commands:
     news:
-        description: Reads the news in pages
-        aliases: []
-        usage: /news [page#]
+        description: Displays the headlines (with page support)
+        aliases: [n]
+        usage: /news [optional:page#]
+    readnews:
+        description: Displays the chosen article
+        aliases: [rn]
+        usage: /readnews [article#]
     addnews:
-        description: Adds a news item to the config file
-        aliases: []
-        usage: /addnews This is an example news story.
+        description: Adds a news item to memory and saves in the database
+        aliases: [an]
+        usage: /addnews 
 permissions:
     simplenews.*:
         description: Gives access to all SimpleNews permissions

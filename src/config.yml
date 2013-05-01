@@ -12,8 +12,12 @@
 
 config_version: .01
 use_metrics: true
-total_stories: 1
-stories:
-    1: 
-         headline: Test Headline 
-         story: Test Story, 1 2 3.  This is a test of Simple News!  Testing Testing
+debug: false
+sql_debug: false
+database:
+    use-mysql: false  
+    host: localhost
+    database: minecraft
+    user: minecraft
+    password: password
+    prefix: news_

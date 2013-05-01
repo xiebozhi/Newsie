@@ -1,14 +1,29 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/* 
+ * SimpleNews 
+ * Copyright (C) 2013 bobbshields <https://github.com/xiebozhi/SimpleNews> and contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
+*/
 package com.teamglokk.simplenews;
 
 import com.teamglokk.simplenews.commands.AddNewsCommand;
 import com.teamglokk.simplenews.commands.NewsCommand;
+import com.teamglokk.simplenews.commands.ReadNewsCommand;
 import com.teamglokk.simplenews.listeners.SimpleNewsLoginEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.TreeMap;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,10 +35,30 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class SimpleNews extends JavaPlugin{
 
-    private double CONFIG_VERSION;
+    private double CONFIG_VERSION = .01;
     private boolean USE_METRICS;
     private int numStories = 1; 
-    public List<NewsStory> stories = new ArrayList<NewsStory>();
+    
+    public TreeMap<Integer,NewsStory> stories = new TreeMap<Integer,NewsStory>();
+    public TreeMap<String,NewsStory> editingStories = new TreeMap<String,NewsStory>();
+    
+    private static boolean DEBUG = true;
+    private static boolean SQL_DEBUG = true;
+    
+    public dbWrapper dbwrapper;
+    protected static boolean useMYSQL = false;
+    private static String db_host = "jdbc:sqlite://localhost:3306/defaultdb";
+    private static String db_database = "defaultdatabase";
+    protected static String db_user = "defaultuser";
+    protected static String db_pass = "defaultpass"; 
+    protected static String db_prefix = "defaultpass"; 
+    protected static String db_URL = null;
+    public static String getDB_dbName() { return db_database;}
+    public static String getDB_host() { return db_host;}
+    public static String getDB_URL() { return db_URL;}
+    public static String getDB_user() {return db_user;}
+    public static String getDB_pass() { return db_pass;}
+    public static String getDB_prefix() {return db_prefix; }
     
      /**
      * Shut down sequence
@@ -34,6 +69,7 @@ public class SimpleNews extends JavaPlugin{
                
         // Save the news items
         this.saveConfig();
+        this.dbwrapper.saveStories(stories.values());
         
         getLogger().info("Shut Down sequence complete");
     }
@@ -45,18 +81,28 @@ public class SimpleNews extends JavaPlugin{
     public void onEnable() {
         getLogger().info("Starting Up");
                 
-        //Load the configuration file
+        // Load the configuration file
         this.saveDefaultConfig(); // saves plugins/Muni/config.yml if !exists
-        loadConfigSettings(); // parses the settings and loads into memory
+        loadConfigSettings(); // parses the settings and saves them into memory
         
         // Register Muni listener(s)
         getServer().getPluginManager().registerEvents(new SimpleNewsLoginEvent(this),this );
-
         
         // Register SimpleNews commands
-        getCommand("news"  ).setExecutor(new NewsCommand    (this) );
-        getCommand("addnews").setExecutor(new AddNewsCommand (this) );
+        getCommand("news"    ).setExecutor(new NewsCommand    (this) );
+        getCommand("readnews").setExecutor(new ReadNewsCommand    (this) );
+        getCommand("addnews" ).setExecutor(new AddNewsCommand (this) );
         
+        // Database wrapper initialization
+        dbwrapper = new dbWrapper(this);
+        
+        if ( isDebug() ) { getLogger().info( "Dependancies Hooked"); }
+        
+        // 
+        this.dbwrapper.createDB(false);
+        loadStories();
+        
+        if ( isDebug() ) { getLogger().info( "Stories loaded from database"); }
         
         /*
         // Start Metrics if allowed by server owner
@@ -75,8 +121,18 @@ public class SimpleNews extends JavaPlugin{
         }
         */
         
-        this.getLogger().info ("Loaded and Ready to server the daily news" );
+        this.getLogger().info ("Loaded and Ready to serve the daily news" );
     } 
+    
+    public boolean loadStories() {
+        int i = 1;
+        for (NewsStory s : this.dbwrapper.getAllStories()) {
+            stories.put(i, s); //Load the stories into memory
+            stories.get(i).setNumber(i++); //Remap the story ids, in case something's been deleted
+            
+        }
+        return true;
+    }
     
     /**
      * Checks the player's permission
@@ -128,26 +184,121 @@ public class SimpleNews extends JavaPlugin{
             getLogger().warning("Config version does not match software requirements.");
         }
         USE_METRICS = this.getConfig().getBoolean("use_metrics");
-        numStories = this.getConfig().getInt("total_stories");
         
-        for ( int i = 1; i <= numStories; i++ ) {
-            NewsStory temp = new NewsStory(i,this.getConfig().getString("stories."+i+".headline"), 
-                    this.getConfig().getString("stories."+i+".story") );
-            stories.add(i-1, temp );
-        }
+        DEBUG = this.getConfig().getBoolean("debug");
+        SQL_DEBUG = this.getConfig().getBoolean("sql_debug");
+        
+        // Get database parameters
+        useMYSQL = this.getConfig().getBoolean("database.use-mysql");
+        db_host = this.getConfig().getString("database.host");
+        db_database = this.getConfig().getString("database.database");
+        db_user = this.getConfig().getString("database.user");
+        db_pass = this.getConfig().getString("database.password");
+        db_prefix = this.getConfig().getString("database.prefix");
+        
+        // Format the URL from the private variables
+        db_URL = useMysql() ? "jdbc:mysql"+"://"+ db_host +":3306/"+db_database+
+                "?user="+db_user+"&password="+db_pass 
+                : "jdbc:sqlite:plugins/SimpleNews/"+db_database+".db";
                 
-        getLogger().info("News items loaded");
         
    }
     
-    public void addStory (String headline, String story) { 
-        int len = stories.size() + 1;
-        stories.add(new NewsStory(len,headline,story) ) ;
-        this.getConfig().set("stories."+len+".headline", headline) ;
-        this.getConfig().set("stories."+len+".story", story);
-        this.saveConfig();
+    public boolean saveStory (CommandSender sender) { 
+        int id = stories.size() + 1;
+        
+        if ( !editingStories.containsKey(sender.getName() ) ) {
+            return false;
+        }
+        
+        NewsStory temp = editingStories.get(sender.getName() ) ;
+        temp.setNumber(id);
+        stories.put( id,  temp ) ;
+        this.dbwrapper.saveStory(temp);
+        clearEditing(sender);
+        return true;
+    }
+    
+    public boolean beginEditing (CommandSender sender){
+        if ( !editingStories.containsKey( sender.getName() ) ){
+            editingStories.put( sender.getName(), new NewsStory() );
+            return true; 
+        } else {
+            sender.sendMessage("You already have something in your clipboard");
+            return false; 
+        }
+    }
+    public NewsStory getEditing (CommandSender sender){
+        return editingStories.get( sender.getName() ) ;
+    }
+    public boolean deleteEditing (CommandSender sender ) {
+        if (editingStories.containsKey(sender.getName() ) ){
+            editingStories.remove( sender.getName() );
+            return true; 
+        } else { return false; }
+    }
+    public boolean isEditing(CommandSender sender) {
+        if ( editingStories.containsKey(sender.getName() ) ) {
+            return true;
+        } else {return false; }
+    }
+    
+    public boolean isEditingValid(CommandSender sender) {
+        return getEditing(sender).isValid(sender);
+    }
+    
+    public boolean editExisting(CommandSender sender, int storyID) {
+        if ( stories.containsKey( storyID ) ) {
+            if (!editingStories.containsKey(sender.getName() ) ) {
+                editingStories.put(sender.getName(),stories.get(storyID) ) ;
+                return true; 
+            } else { 
+                sender.sendMessage("You are already editing an article.  Do /addnews complete OR /addnews clear");
+                return false; 
+            }
+        } else {
+            sender.sendMessage("That article ID does not exist");
+            return false; 
+        }
+    }
+    public void clearEditing(CommandSender sender){
+        if (editingStories.containsKey(sender.getName() ) ){
+            editingStories.remove(sender.getName() );
+        }
     }
        
+    
+    public boolean isDebug() { return DEBUG; }
+   
+   /**
+    * Set the debug value about whether to output verbose to the log
+    * @param value 
+    */
+   public void setDebug(boolean value){ 
+       DEBUG = value; 
+       this.getLogger().info("Debug changed to: " + String.valueOf(value) );
+   }
+   
+    /**
+     * Global config: Whether the plugin should output verbose debugging info to the log
+     * @return 
+     */
+   public boolean isSQLdebug() { return SQL_DEBUG; }
+   /**
+    * Set the debug value about whether to output verbose to the log
+    * @param value 
+    */
+   public void setSQLDebug(boolean value){ 
+       SQL_DEBUG = value; 
+       this.getLogger().info("Debug changed to: " + String.valueOf(value) );
+   }
+  
+    /**
+     * Global config: DBwrapper uses this to decide where to send DB queries
+     * @return 
+     */
+    public boolean useMysql() { return useMYSQL; } 
+    
     /**
      * Real Work 
      * @param player
