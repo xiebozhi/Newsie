@@ -1,5 +1,5 @@
 /* 
- * SimpleNews 
+ * Newsie 
  * Copyright (C) 2013 bobbshields <https://github.com/xiebozhi/SimpleNews> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,25 @@
  * 
  * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
 */
-package com.teamglokk.simplenews.commands;
+package com.teamglokk.newsie.commands;
 
-import com.teamglokk.simplenews.NewsStory;
+import com.teamglokk.newsie.NewsStory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import org.bukkit.ChatColor;
-import com.teamglokk.simplenews.SimpleNews;
+import com.teamglokk.newsie.Newsie;
 /**
  * Handler for the /town command.
  * @author BobbShields
  */
-public class NewsCommand implements CommandExecutor {
-    private SimpleNews plugin;
+public class ReadNewsCommand implements CommandExecutor {
+    private Newsie plugin;
     private Player player;
     
-    public NewsCommand (SimpleNews instance){
+    public ReadNewsCommand (Newsie instance){
         plugin = instance;
     }
     @Override
@@ -50,37 +50,39 @@ public class NewsCommand implements CommandExecutor {
             }
         }
         
-        if (args.length == 0 ) { readHeadlines(sender,"1"); }
-        else if (args.length ==1 ) { readHeadlines(sender,args[0]); }
-        else { sender.sendMessage("You entered too many parameters.  Do /news (page# is optional)"); }
+        if (args.length==0) {
+            sender.sendMessage("You must enter an article number to read.  Check /news");
+            return true; 
+        } else if (args.length < 1 ){
+            sender.sendMessage("You entered too many parameters.  Usage: /readnews article#");
+            return true; 
+        }
         
+        readnews(sender,args[0]); 
         return true;
     }
-    
-    public boolean readHeadlines(CommandSender s, String a){
-        int requestedPage = 1;
+    private boolean readnews(CommandSender s, String a){
+        int articleNumber = -1;
         try {
-            requestedPage = Integer.parseInt(a.trim());
+            articleNumber = Integer.parseInt(a.trim());
         } catch (NumberFormatException e){
-            s.sendMessage("You did not enter a valid number");
+            s.sendMessage("You did not enter a number for the article, please check /news then do /readnews #");
+            return false;
         }
         
-        final int totalSize = plugin.stories.size();
-        final int pageSize = 5;
-        final int pages = (int) Math.ceil( totalSize / (float) pageSize );
-        s.sendMessage("List of headlines (Page "+requestedPage+" of "+ pages +")" );
-        
-        s.sendMessage("List size is " +plugin.stories.size() ); //DELETE MEEEEEEEEEEEEEEEEEEEEEEEEEE
-        
-        if ( plugin.stories.size() > 0 ) {
-            for ( int i = 1; i <= 5; i++ ){
-                s.sendMessage(i+": "+plugin.stories.get(i).getHeadline() );
-            }
-        } else{
-            s.sendMessage(ChatColor.RED+"There are no news stories!");
+        if (plugin.stories.containsKey(articleNumber) ) {
+            NewsStory temp = plugin.stories.get( articleNumber );
+            s.sendMessage( temp.getHeadline());
+            s.sendMessage( temp.getBody1() );
+            s.sendMessage( temp.getBody2() );
+            s.sendMessage( temp.getBody3() );
+            s.sendMessage( temp.getBody4() );
+            return true;
+        } else {
+            s.sendMessage("There is no article by that number ("+articleNumber+").");
+            return false; 
         }
         
-        return true; 
     }
     
 }

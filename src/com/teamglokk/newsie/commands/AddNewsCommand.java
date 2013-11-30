@@ -1,5 +1,5 @@
 /* 
- * SimpleNews 
+ * Newsie 
  * Copyright (C) 2013 bobbshields <https://github.com/xiebozhi/SimpleNews> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,16 +17,16 @@
  * 
  * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
 */
-package com.teamglokk.simplenews.commands;
+package com.teamglokk.newsie.commands;
 
-import com.teamglokk.simplenews.NewsStory;
+import com.teamglokk.newsie.NewsStory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import org.bukkit.ChatColor;
-import com.teamglokk.simplenews.SimpleNews;
+import com.teamglokk.newsie.Newsie;
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -34,10 +34,10 @@ import java.util.List;
  * @author BobbShields
  */
 public class AddNewsCommand implements CommandExecutor {
-    private SimpleNews plugin;
+    private Newsie plugin;
     private Player player;
     
-    public AddNewsCommand (SimpleNews instance){
+    public AddNewsCommand (Newsie instance){
             plugin = instance;
     }
     @Override
