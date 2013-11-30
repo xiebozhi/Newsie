@@ -1,5 +1,5 @@
 /* 
- * Newsie 
+ * SimpleNews 
  * Copyright (C) 2013 bobbshields <https://github.com/xiebozhi/SimpleNews> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * 
  * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
 */
-package com.teamglokk.newsie;
+package com.teamglokk.simplenews;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,15 +34,15 @@ import java.util.List;
  * Wraps the database functions to provide simple functions
  * @author BobbShields
  */
-public class dbWrapper extends Newsie {
+public class dbWrapper extends SimpleNews {
 
-    private Newsie plugin;
+    private SimpleNews plugin;
     
     private Connection conn = null;
     private Statement stmt = null;
     public ResultSet rs = null;
     
-    public dbWrapper( Newsie instance ){
+    public dbWrapper( SimpleNews instance ){
         plugin = instance;
     }
     

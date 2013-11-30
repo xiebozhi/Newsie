@@ -17,7 +17,7 @@
  * 
  * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
 */
-package com.teamglokk.newsie;
+package com.teamglokk.simplenews;
 
 import java.util.Date;
 import org.bukkit.command.CommandSender;

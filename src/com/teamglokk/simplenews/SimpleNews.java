@@ -1,5 +1,5 @@
 /* 
- * Newsie 
+ * SimpleNews 
  * Copyright (C) 2013 bobbshields <https://github.com/xiebozhi/SimpleNews> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,12 @@
  * 
  * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
 */
-package com.teamglokk.newsie;
+package com.teamglokk.simplenews;
 
-import com.teamglokk.newsie.commands.AddNewsCommand;
-import com.teamglokk.newsie.commands.NewsCommand;
-import com.teamglokk.newsie.commands.ReadNewsCommand;
-import com.teamglokk.newsie.listeners.SimpleNewsLoginEvent;
+import com.teamglokk.simplenews.commands.AddNewsCommand;
+import com.teamglokk.simplenews.commands.NewsCommand;
+import com.teamglokk.simplenews.commands.ReadNewsCommand;
+import com.teamglokk.simplenews.listeners.SimpleNewsLoginEvent;
 import java.util.TreeMap;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -33,7 +33,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author bobbshields
  */
-public class Newsie extends JavaPlugin{
+public class SimpleNews extends JavaPlugin{
 
     private double CONFIG_VERSION = .01;
     private boolean USE_METRICS;
@@ -88,7 +88,7 @@ public class Newsie extends JavaPlugin{
         // Register Muni listener(s)
         getServer().getPluginManager().registerEvents(new SimpleNewsLoginEvent(this),this );
         
-        // Register Newsie commands
+        // Register SimpleNews commands
         getCommand("news"    ).setExecutor(new NewsCommand    (this) );
         getCommand("readnews").setExecutor(new ReadNewsCommand    (this) );
         getCommand("addnews" ).setExecutor(new AddNewsCommand (this) );

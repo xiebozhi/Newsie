@@ -1,5 +1,5 @@
 /* 
- * Newsie 
+ * SimpleNews 
  * Copyright (C) 2013 bobbshields <https://github.com/xiebozhi/SimpleNews> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,14 @@
  * 
  * Binary releases are available freely at <http://dev.bukkit.org/server-mods/simplenews/>.
 */
-package com.teamglokk.newsie.listeners;
+package com.teamglokk.simplenews.listeners;
 
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
-import com.teamglokk.newsie.Newsie;
+import com.teamglokk.simplenews.SimpleNews;
 import org.bukkit.ChatColor;
 
 /**
@@ -32,9 +32,9 @@ import org.bukkit.ChatColor;
  * @author bobbshields
  */
 public class SimpleNewsLoginEvent implements Listener{
-    Newsie plugin;
+    SimpleNews plugin;
     
-    public SimpleNewsLoginEvent (Newsie instance) {
+    public SimpleNewsLoginEvent (SimpleNews instance) {
         plugin = instance; 
     }
     /**
